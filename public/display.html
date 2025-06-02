@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Live Click Display</title>
   <style>
     body {
@@ -14,52 +14,32 @@
       height: 100vh;
       position: relative;
     }
-
-    .emoji-bg {
-      position: absolute;
-      bottom: 50px;
-      left: 0;
-      right: 0;
-      font-size: 2em;
-      text-align: center;
-      opacity: 0.2;
-      user-select: none;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
     #topContainer {
       text-align: center;
       padding-top: 20px;
     }
-
     #label, #counter {
       transition: transform 0.2s ease-in-out, opacity 0.4s ease-in-out;
     }
-
     #label {
-      font-size: 1em;
+      font-size: 0.7em;
       margin-bottom: 10px;
     }
-
     #counter {
-      font-size: 4.9em;
+      font-size: 3.43em;
       font-weight: bold;
     }
-
     #targetInputContainer {
       position: absolute;
       bottom: 20px;
       left: 20px;
       font-size: 1.2em;
     }
-
     #targetInput {
       font-size: 1em;
       width: 100px;
       margin-left: 10px;
     }
-
     #train {
       position: absolute;
       top: 50%;
@@ -68,8 +48,8 @@
       font-size: 9em;
       transition: left 0.5s ease;
       animation: idleBounce 2s infinite ease-in-out;
+      z-index: 2;
     }
-
     @keyframes idleBounce {
       0%, 100% {
         transform: translateY(-50%) translateY(0);
@@ -78,7 +58,17 @@
         transform: translateY(-50%) translateY(-10px);
       }
     }
-
+    #track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #555 0%, #aaa 50%, #555 100%);
+      z-index: 1;
+      transform: translateY(10px);
+      border-radius: 3px;
+    }
     #testButton, #resetButton {
       position: absolute;
       bottom: 20px;
@@ -88,28 +78,23 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     #testButton {
       background-color: #28a745;
       color: white;
       right: 140px;
     }
-
     #resetButton {
       background-color: grey;
       color: white;
       right: 20px;
     }
-
     #testButton:hover {
       background-color: #218838;
     }
-
     .celebrate {
       font-size: 9em;
       animation: popup 1s ease forwards;
     }
-
     @keyframes popup {
       0% { transform: scale(0.5); opacity: 0; }
       50% { transform: scale(1.2); opacity: 1; }
@@ -118,14 +103,13 @@
   </style>
 </head>
 <body>
-  <div class="emoji-bg">🌳🌳🌳🌲🏠🌲🌳🚦🌳🌳🌲🌳🌲🏞️🌳🌳🌲🌳🚏🌳🌲🌳🌲🌳🌳🌳</div>
-
   <div id="topContainer">
     <div id="label">Total Counts:</div>
     <div id="counter">0</div>
   </div>
 
   <div id="train">🚃</div>
+  <div id="track"></div>
 
   <div id="targetInputContainer">
     <label for="targetInput">Target count:</label>
@@ -135,7 +119,7 @@
   <button id="testButton">Test Click</button>
   <button id="resetButton">Reset</button>
 
-  <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
     const counter = document.getElementById("counter");
@@ -165,7 +149,6 @@
         counter.textContent = currentCount;
         label.classList.remove("celebrate");
       }
-
       counter.style.transform = "scale(1.2)";
       setTimeout(() => {
         counter.style.transform = "scale(1)";
@@ -194,9 +177,7 @@
     });
 
     resetButton.addEventListener("click", () => {
-      currentCount = 0;
-      updateCounterDisplay();
-      moveTrain();
+      socket.emit('reset'); // reset on server side too
     });
   </script>
 </body>
