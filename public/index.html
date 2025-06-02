@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Click Counter Index</title>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      -webkit-text-size-adjust: 100%; /* Prevent font size zoom on iOS */
+      -ms-text-size-adjust: 100%; /* Prevent font size zoom on IE */
+    }
     body {
       display: flex;
       flex-direction: column;
@@ -15,6 +22,8 @@
       font-family: Arial, sans-serif;
       background: #222;
       color: white;
+      -webkit-tap-highlight-color: transparent; /* remove tap highlight */
+      touch-action: manipulation; /* improve tap responsiveness */
     }
     #clickBtn {
       font-size: 3rem;
@@ -25,6 +34,8 @@
       cursor: pointer;
       user-select: none;
       transition: background-color 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     #clickBtn:active {
       background-color: #218838;
@@ -32,6 +43,7 @@
     #deviceCount {
       margin-top: 20px;
       font-size: 1.5rem;
+      user-select: none;
     }
   </style>
 </head>
