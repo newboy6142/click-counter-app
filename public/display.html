@@ -2,35 +2,201 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Click Counter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Click Display</title>
   <style>
-    body { margin: 0; background: black; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    #counter {
-      font-size: 8em;
-      font-weight: bold;
-      animation: pop 0.2s ease;
+    body {
+      margin: 0;
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      position: relative;
     }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
+
+    .emoji-bg {
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      right: 0;
+      font-size: 2em;
+      text-align: center;
+      opacity: 0.2;
+      user-select: none;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #topContainer {
+      text-align: center;
+      padding-top: 20px;
+    }
+
+    #label, #counter {
+      transition: transform 0.2s ease-in-out, opacity 0.4s ease-in-out;
+    }
+
+    #label {
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    #counter {
+      font-size: 4.9em;
+      font-weight: bold;
+    }
+
+    #targetInputContainer {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 1.2em;
+    }
+
+    #targetInput {
+      font-size: 1em;
+      width: 100px;
+      margin-left: 10px;
+    }
+
+    #train {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      font-size: 9em;
+      transition: left 0.5s ease;
+      animation: idleBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes idleBounce {
+      0%, 100% {
+        transform: translateY(-50%) translateY(0);
+      }
+      50% {
+        transform: translateY(-50%) translateY(-10px);
+      }
+    }
+
+    #testButton, #resetButton {
+      position: absolute;
+      bottom: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #testButton {
+      background-color: #28a745;
+      color: white;
+      right: 140px;
+    }
+
+    #resetButton {
+      background-color: grey;
+      color: white;
+      right: 20px;
+    }
+
+    #testButton:hover {
+      background-color: #218838;
+    }
+
+    .celebrate {
+      font-size: 9em;
+      animation: popup 1s ease forwards;
+    }
+
+    @keyframes popup {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
       100% { transform: scale(1); }
     }
   </style>
 </head>
 <body>
-  <div id="counter">0</div>
+  <div class="emoji-bg">🌳🌳🌳🌲🏠🌲🌳🚦🌳🌳🌲🌳🌲🏞️🌳🌳🌲🌳🚏🌳🌲🌳🌲🌳🌳🌳</div>
+
+  <div id="topContainer">
+    <div id="label">Total Counts:</div>
+    <div id="counter">0</div>
+  </div>
+
+  <div id="train">🚃</div>
+
+  <div id="targetInputContainer">
+    <label for="targetInput">Target count:</label>
+    <input type="number" id="targetInput" value="500" />
+  </div>
+
+  <button id="testButton">Test Click</button>
+  <button id="resetButton">Reset</button>
 
   <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
   <script>
     const socket = io();
-    const counter = document.getElementById('counter');
+    const counter = document.getElementById("counter");
+    const label = document.getElementById("label");
+    const train = document.getElementById("train");
+    const targetInput = document.getElementById("targetInput");
+    const testButton = document.getElementById("testButton");
+    const resetButton = document.getElementById("resetButton");
 
-    socket.on('updateCount', (count) => {
-      counter.textContent = count;
-      counter.style.animation = 'none';
-      void counter.offsetWidth; // Force reflow to restart animation
-      counter.style.animation = 'pop 0.2s ease';
+    let currentCount = 0;
+
+    socket.on("update-count", (count) => {
+      currentCount = count;
+      updateCounterDisplay();
+      moveTrain();
+    });
+
+    function updateCounterDisplay() {
+      const target = parseInt(targetInput.value, 10) || 500;
+      if (currentCount >= target) {
+        label.textContent = "🎉Congratulation!🎉";
+        counter.textContent = "";
+        label.classList.add("celebrate");
+        counter.classList.remove("celebrate");
+      } else {
+        label.textContent = "Total Counts:";
+        counter.textContent = currentCount;
+        label.classList.remove("celebrate");
+      }
+
+      counter.style.transform = "scale(1.2)";
+      setTimeout(() => {
+        counter.style.transform = "scale(1)";
+      }, 200);
+    }
+
+    function moveTrain() {
+      const screenWidth = window.innerWidth;
+      const target = parseInt(targetInput.value, 10) || 500;
+      const clampedProgress = Math.min(currentCount / target, 1);
+      const trainX = clampedProgress * (screenWidth - 100);
+      train.style.left = `${trainX}px`;
+    }
+
+    targetInput.addEventListener("input", () => {
+      moveTrain();
+      updateCounterDisplay();
+    });
+
+    window.addEventListener("resize", moveTrain);
+
+    testButton.addEventListener("click", () => {
+      currentCount++;
+      updateCounterDisplay();
+      moveTrain();
+    });
+
+    resetButton.addEventListener("click", () => {
+      currentCount = 0;
+      updateCounterDisplay();
+      moveTrain();
     });
   </script>
 </body>
