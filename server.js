@@ -1,33 +1,40 @@
 const express = require('express');
-const app = express();
-const http = require('http').createServer(app);
+const http = require('http');
 const { Server } = require('socket.io');
-const io = new Server(http);
 
-const PORT = process.env.PORT || 3000;
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-let totalClicks = 0;
-
-// Serve static files (index.html, display.html, etc.)
-app.use(express.static('public'));
+let totalCount = 0;
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log('User connected:', socket.id);
 
-  // Send current click count immediately
-  socket.emit('updateCount', totalClicks);
+  // Send current count on new connection
+  socket.emit('update-count', totalCount);
 
-  // On click event from any client
-  socket.on('click', () => {
-    totalClicks++;
-    io.emit('updateCount', totalClicks); // Broadcast to all clients
+  // Listen for increment event from index page
+  socket.on('increment', () => {
+    totalCount++;
+    io.emit('update-count', totalCount); // Broadcast updated count to all clients
+  });
+
+  // Listen for reset event
+  socket.on('reset', () => {
+    totalCount = 0;
+    io.emit('update-count', totalCount);
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log('User disconnected:', socket.id);
   });
 });
 
-http.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Serve static files from 'public' folder (optional)
+app.use(express.static('public'));
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
