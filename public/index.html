@@ -2,43 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Index - Click Counter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Live Click Counter - Index</title>
   <style>
     body {
-      display: flex;
-      height: 100vh;
-      justify-content: center;
-      align-items: center;
+      font-family: Arial, sans-serif;
       background: #222;
       color: white;
-      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-    button {
-      font-size: 2em;
-      padding: 20px 40px;
+
+    #clickButton {
+      font-size: 20px;
+      padding: 15px 30px;
       cursor: pointer;
-      border-radius: 10px;
+      user-select: none;
       border: none;
-      background-color: #28a745;
+      border-radius: 8px;
+      background-color: #007bff;
       color: white;
-      transition: background-color 0.3s ease;
+      transition: transform 0.1s ease, background-color 0.1s ease;
+      outline: none;
     }
-    button:hover {
-      background-color: #218838;
+    #clickButton:active {
+      transform: scale(0.95);
+      background-color: #0056b3;
+    }
+
+    #localCountDisplay {
+      margin-top: 20px;
+      font-size: 1.2em;
+      letter-spacing: 1.5px;
     }
   </style>
 </head>
 <body>
-  <button id="clickBtn">Click Me!</button>
+  <button id="clickButton">Click Me!</button>
+  <div id="localCountDisplay">Your clicks: 0</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    const clickButton = document.getElementById('clickButton');
+    const localCountDisplay = document.getElementById('localCountDisplay');
 
-    const clickBtn = document.getElementById('clickBtn');
-    clickBtn.addEventListener('click', () => {
-      socket.emit('increment');  // Tell server to increase count
+    // Load local count from localStorage or 0
+    let localCount = parseInt(localStorage.getItem('localClickCount')) || 0;
+    localCountDisplay.textContent = `Your clicks: ${localCount}`;
+
+    clickButton.addEventListener('click', () => {
+      // Vibration feedback for supported devices
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      localCount++;
+      localStorage.setItem('localClickCount', localCount);
+      localCountDisplay.textContent = `Your clicks: ${localCount}`;
+
+      // Notify server about the click
+      socket.emit('click');
     });
   </script>
 </body>
