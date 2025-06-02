@@ -1,24 +1,26 @@
 const express = require('express');
-const http = require('http');
-const path = require('path');
-const { Server } = require('socket.io');
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require('http').createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(http);
+
+const PORT = process.env.PORT || 3000;
 
 let totalClicks = 0;
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files (index.html, display.html, etc.)
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
   console.log('A user connected');
 
-  socket.emit('updateTotal', totalClicks);
+  // Send current click count immediately
+  socket.emit('updateCount', totalClicks);
 
+  // On click event from any client
   socket.on('click', () => {
     totalClicks++;
-    io.emit('updateTotal', totalClicks);
+    io.emit('updateCount', totalClicks); // Broadcast to all clients
   });
 
   socket.on('disconnect', () => {
@@ -26,7 +28,6 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+http.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

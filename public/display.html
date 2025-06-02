@@ -2,42 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Total Clicks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Click Counter</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      flex-direction: column;
-    }
-    #totalClicks {
-      font-size: 8rem;
+    body { margin: 0; background: black; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #counter {
+      font-size: 8em;
       font-weight: bold;
-      transition: transform 0.2s ease;
+      animation: pop 0.2s ease;
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
 <body>
-  <div>Total Clicks</div>
-  <div id="totalClicks">0</div>
+  <div id="counter">0</div>
 
   <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
   <script>
     const socket = io();
-    const totalDisplay = document.getElementById('totalClicks');
+    const counter = document.getElementById('counter');
 
-    socket.on('updateTotal', (count) => {
-      totalDisplay.textContent = count;
-      totalDisplay.style.transform = 'scale(1.2)';
-      setTimeout(() => {
-        totalDisplay.style.transform = 'scale(1)';
-      }, 150);
+    socket.on('updateCount', (count) => {
+      counter.textContent = count;
+      counter.style.animation = 'none';
+      void counter.offsetWidth; // Force reflow to restart animation
+      counter.style.animation = 'pop 0.2s ease';
     });
   </script>
 </body>
