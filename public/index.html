@@ -3,69 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Live Click Counter - Index</title>
+  <title>Click Counter Index</title>
   <style>
     body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
       font-family: Arial, sans-serif;
       background: #222;
       color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
     }
-
-    #clickButton {
-      font-size: 20px;
-      padding: 15px 30px;
+    #clickBtn {
+      font-size: 3rem;
+      padding: 20px 40px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
       user-select: none;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      transition: transform 0.1s ease, background-color 0.1s ease;
-      outline: none;
+      transition: background-color 0.2s ease;
     }
-    #clickButton:active {
-      transform: scale(0.95);
-      background-color: #0056b3;
+    #clickBtn:active {
+      background-color: #218838;
     }
-
-    #localCountDisplay {
+    #deviceCount {
       margin-top: 20px;
-      font-size: 1.2em;
-      letter-spacing: 1.5px;
+      font-size: 1.5rem;
     }
   </style>
 </head>
 <body>
-  <button id="clickButton">Click Me!</button>
-  <div id="localCountDisplay">Your clicks: 0</div>
+  <button id="clickBtn">Click Me</button>
+  <div id="deviceCount">Your clicks: 0</div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    const clickButton = document.getElementById('clickButton');
-    const localCountDisplay = document.getElementById('localCountDisplay');
+    const clickBtn = document.getElementById('clickBtn');
+    const deviceCountEl = document.getElementById('deviceCount');
 
-    // Load local count from localStorage or 0
-    let localCount = parseInt(localStorage.getItem('localClickCount')) || 0;
-    localCountDisplay.textContent = `Your clicks: ${localCount}`;
+    let deviceClickCount = 0;
 
-    clickButton.addEventListener('click', () => {
-      // Vibration feedback for supported devices
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
-
-      localCount++;
-      localStorage.setItem('localClickCount', localCount);
-      localCountDisplay.textContent = `Your clicks: ${localCount}`;
-
-      // Notify server about the click
+    clickBtn.addEventListener('click', () => {
+      deviceClickCount++;
+      deviceCountEl.textContent = 'Your clicks: ' + deviceClickCount;
       socket.emit('click');
     });
   </script>
